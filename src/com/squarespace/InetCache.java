@@ -9,7 +9,7 @@ import java.util.LinkedList;
 
 public class InetCache implements AddressCache {
     /** Actual cache, where head is most recent elements and tail is oldest */
-    private LinkedList<InetAddress> cacheList = (LinkedList<InetAddress>) Collections.synchronizedList(new LinkedList<InetAddress>());
+    private LinkedList<InetAddress> cacheList = new LinkedList<InetAddress>();
     private boolean closed = false;
 
 //    /** HashMap to check for existence of element; trades runtime for space complexity */
@@ -20,11 +20,13 @@ public class InetCache implements AddressCache {
      */
     public boolean offer(InetAddress address) {
         if (closed) {return false;}
-        if (cacheList.contains(address)) {
-            cacheList.remove(address);
+        synchronized(cacheList) {
+            if (cacheList.contains(address)) {
+                cacheList.remove(address);
+            }
+            cacheList.addFirst(address);
+            cacheList.notify();     // wakes up any waiting threads
         }
-        cacheList.addFirst(address);
-        cacheList.notify();     // wakes up any waiting threads
         return true;
     }
 
@@ -75,8 +77,10 @@ public class InetCache implements AddressCache {
      */
     public InetAddress take() throws InterruptedException {
         if (closed) { return null; }
-        while (cacheList.size() == 0) {
-            cacheList.wait();   // waits to be woken up by offer()
+        synchronized(cacheList) {
+            while (cacheList.size() == 0) {
+                cacheList.wait();   // waits to be woken up by offer()
+            }
         }
         return cacheList.pollFirst();
     }
