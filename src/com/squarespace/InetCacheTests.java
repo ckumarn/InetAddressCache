@@ -44,10 +44,9 @@ public class InetCacheTests {
         testCache.offer(addr);
         testCache.offer(addr2);
         
-        System.out.println("first sleep");
         Thread.sleep(5000);
         assertEquals("Shoud have 1 element", 1, testCache.size());
-        System.out.println("first sleep");
+        assertEquals("Should have removed the older element", addr2, testCache.peek());
         Thread.sleep(5000);
         assertTrue(testCache.isEmpty());
         testCache.close(); 	// always close the cache

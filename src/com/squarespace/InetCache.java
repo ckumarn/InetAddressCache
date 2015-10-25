@@ -45,7 +45,7 @@ public class InetCache implements AddressCache {
     class removeTask extends TimerTask {
         public void run() {
             if (!closed) {
-                remove();   // call safe remove function of cache
+                removeOldest();   // call safe remove function of cache
             }
         }
     }
@@ -146,6 +146,14 @@ public class InetCache implements AddressCache {
     public boolean isEmpty() {
         if (closed) { return true; }
         return cacheList.size() == 0;
+    }
+
+    /**
+    * Returns and removes least recently added {@link InetAddress}
+    */
+    public InetAddress removeOldest() {
+        if (closed) {return null; }
+        return cacheList.pollLast();
     }
 
 }
