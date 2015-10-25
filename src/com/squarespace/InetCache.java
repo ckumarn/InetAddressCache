@@ -1,6 +1,6 @@
 package com.squarespace;
 
-
+import com.squarespace.AddressCache;
 import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,28 +15,33 @@ import java.util.TimerTask;
 
 public class InetCache implements AddressCache {
     /** Actual cache, where head is most recent elements and tail is oldest */
-    private LinkedList<InetAddress> cacheList;
-    private boolean closed;
+    protected LinkedList<InetAddress> cacheList;
+    protected boolean closed;
     Timer timer;
 
 
 //    /** HashMap to check for existence of element; trades runtime for space complexity */
 //    HashMap<InetAddress,InetAddress> cacheExistence = new HashMap<InetAddress, InetAddress>();
 
-    public void InetCache() {
-        this(5);
+    // Overloaded Constructor: create cache with default 5 second cleanup period
+    public InetCache() {
+       this(2);
     }
-    public void InetCache(int seconds) {
+
+    // Overloaded Constructor: create cache with specified cleanup period
+    public InetCache(int seconds) {
         this.cacheList = new LinkedList<InetAddress>();
         this.closed = false;
         this.timer = new Timer();
-        this.timer.schedule(new removeTask(), seconds * 1000);
+        this.timer.schedule(new removeTask(), 0, seconds * 1000);
     }
 
     class removeTask extends TimerTask {
         public void run() {
-            System.out.println("RUNNING THE REMOVE TASK");
-            System.exit(0);
+            if (!closed) {
+                System.out.println("removing in removeTask!");
+                cacheList.remove();
+            }
         }
     }
 

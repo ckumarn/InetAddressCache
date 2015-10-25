@@ -18,5 +18,17 @@ public class InetCacheTester {
         	System.out.println(failure.toString());
       	}
 		System.out.println("PASSED ALL TESTS: " + result.wasSuccessful());
+		
+
+
+		// test print outs
+		for (int i =1; i < 6; i++) {
+			// try {Thread.sleep(1000);} catch Exception;
+			try{
+				System.out.println("sleeping");
+				Thread.sleep(1000);
+			} catch (Exception e) {}
+			System.out.println("System running at second: " + i);
+		}
    }
 }  
