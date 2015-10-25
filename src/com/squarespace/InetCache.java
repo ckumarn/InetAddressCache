@@ -23,12 +23,16 @@ public class InetCache implements AddressCache {
 //    /** HashMap to check for existence of element; trades runtime for space complexity */
 //    HashMap<InetAddress,InetAddress> cacheExistence = new HashMap<InetAddress, InetAddress>();
 
-    // Overloaded Constructor: create cache with default 5 second cleanup period
+    /**
+    * Overloaded Constructor: create cache with default 5 second cleanup period
+    */
     public InetCache() {
-       this(2);
+       this(5);
     }
 
-    // Overloaded Constructor: create cache with specified cleanup period
+    /** 
+    * Overloaded Constructor: create cache with specified cleanup period
+    */
     public InetCache(int seconds) {
         this.cacheList = new LinkedList<InetAddress>();
         this.closed = false;
@@ -36,11 +40,14 @@ public class InetCache implements AddressCache {
         this.timer.schedule(new removeTask(), 0, seconds * 1000);
     }
 
+    /**
+    * TimerTask that for timer that cleans cache
+    */
     class removeTask extends TimerTask {
         public void run() {
             if (!closed) {
-                System.out.println("removing in removeTask!");
-                cacheList.remove();
+                // call safe remove function of cache
+                remove();
             }
         }
     }
@@ -117,11 +124,16 @@ public class InetCache implements AddressCache {
 
     /**
      * Closes the {@link AddressCache} and releases all resources.
+     * Always be sure to close() cache at end of use or else timer will run indefinitely
      */
     public void close() {
+        // dereference list & set flag
         cacheList = null;
         closed = true;
+        
         // kill the timer
+        timer.cancel();
+        timer.purge();
     }
 
     /**
