@@ -8,19 +8,18 @@ import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// import java.awt.*;
-// import java.awt.event.*;
-// import javax.swing.*;
-
 
 public class InetCache implements AddressCache {
-    /** Actual cache, where head is most recent elements and tail is oldest */
+    // Actual cache, where head is most recent elements and tail is oldest
     protected LinkedList<InetAddress> cacheList;
+
+    // boolean to determine if cache is still valid
     protected boolean closed;
-    Timer timer;
 
+    // timer for cleanup
+    Timer cleanupTimer;
 
-//    /** HashMap to check for existence of element; trades runtime for space complexity */
+//    HashMap to check for existence of element; trades runtime for space complexity
 //    HashMap<InetAddress,InetAddress> cacheExistence = new HashMap<InetAddress, InetAddress>();
 
     /**
@@ -36,18 +35,17 @@ public class InetCache implements AddressCache {
     public InetCache(int seconds) {
         this.cacheList = new LinkedList<InetAddress>();
         this.closed = false;
-        this.timer = new Timer();
-        this.timer.schedule(new removeTask(), 0, seconds * 1000);
+        this.cleanupTimer = new Timer();
+        this.cleanupTimer.schedule(new removeTask(), 0, seconds * 1000);
     }
 
     /**
-    * TimerTask that for timer that cleans cache
+    * TimerTask that for cleanupTimer that cleans cache
     */
     class removeTask extends TimerTask {
         public void run() {
             if (!closed) {
-                // call safe remove function of cache
-                remove();
+                remove();   // call safe remove function of cache
             }
         }
     }
@@ -127,13 +125,11 @@ public class InetCache implements AddressCache {
      * Always be sure to close() cache at end of use or else timer will run indefinitely
      */
     public void close() {
-        // dereference list & set flag
         cacheList = null;
         closed = true;
         
-        // kill the timer
-        timer.cancel();
-        timer.purge();
+        cleanupTimer.cancel();
+        cleanupTimer.purge();
     }
 
     /**
