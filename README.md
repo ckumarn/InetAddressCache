@@ -16,10 +16,21 @@ You're provided with an interface for a fictional InetAddress cache. The cache h
 * Please email your solution in a zip file with the format: AddressCache_YourName.zip
 
 
+#Implementation
 
-LIFO and FIFO
---------------
-Used linked list, keep track head and tail. 
-LIFO rid at one end, and FIFO rid at other
+* InetCache implements AddressCache and is stored internally as a linked list of InetAddresses. New InetAddresses are added to the front of the list. LIFO retrieval handled by polling elements from the head of the list. FIFO eviction handled by polling elements from the tail of the list.
+* Overloaded constructor allows for user to either specify their own cache eviction time, or use the default time of 5 seconds. Note: InetCache must always be closed() after usage or timer will continue to run.
+* Eviction task handled by a Timer in the InetCache, and a TimerTask that calls the InetCache function which removes the oldest element.
+* Unit testing done with JUnit.
 
-Hashmap for existence
+* Upcoming: Hashmap for existence?
+
+
+#Usage
+
+*In src, compile with 
+	> javac com/squarespace/*.java
+
+* In src, run tests with 
+	> java com/squarespace/InetCacheTester
+
