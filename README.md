@@ -22,14 +22,14 @@ You're provided with an interface for a fictional InetAddress cache. The cache h
 * Overloaded constructor allows for user to either specify their own cache eviction time, or use the default time of 5 seconds. Note: InetCache must always be closed() after usage or timer will continue to run.
 * Eviction task handled by a Timer in the InetCache, and a TimerTask that calls the InetCache function which removes the oldest element.
 * HashMap is used for any operation that checks for existence of an Address, trading runtime for space complexity.
-* Unit testing done with JUnit.
+* Unit testing done with JUnit.	
 
 
 #Usage
 
-*In src, compile with 
-	> javac com/squarespace/*.java
+* In src, compile with 
+	* javac com/squarespace/*.java
 
 * In src, run tests with 
-	> java com/squarespace/InetCacheTester
+	* java com/squarespace/InetCacheTester
 
