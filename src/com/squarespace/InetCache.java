@@ -11,16 +11,16 @@ import java.util.TimerTask;
 
 public class InetCache implements AddressCache {
     // Actual cache, where head is most recent elements and tail is oldest
-    protected LinkedList<InetAddress> cacheList;
+    protected LinkedList<InetAddress> cacheList = new LinkedList<InetAddress>();
 
     // boolean to determine if cache is still valid
-    protected boolean closed;
+    protected boolean closed = false;
 
     // timer for cleanup
-    Timer cleanupTimer;
+    Timer cleanupTimer = new Timer();
 
-//    HashMap to check for existence of element; trades runtime for space complexity
-//    HashMap<InetAddress,InetAddress> cacheExistence = new HashMap<InetAddress, InetAddress>();
+    // HashMap to check for existence of element; trades runtime for space complexity
+    HashMap<InetAddress,InetAddress> cacheExistence = new HashMap<InetAddress, InetAddress>();
 
     /**
     * Overloaded Constructor: create cache with default 5 second cleanup period
@@ -33,10 +33,7 @@ public class InetCache implements AddressCache {
     * Overloaded Constructor: create cache with specified cleanup period
     */
     public InetCache(int seconds) {
-        this.cacheList = new LinkedList<InetAddress>();
-        this.closed = false;
-        this.cleanupTimer = new Timer();
-        this.cleanupTimer.schedule(new removeTask(), 0, seconds * 1000);
+        this.cleanupTimer.schedule(new removeTask(), seconds * 1000, seconds * 1000);
     }
 
     /**
@@ -52,13 +49,15 @@ public class InetCache implements AddressCache {
 
     /**
      * Adds the given {@link InetAddress} and returns {@code true} on success.
+     * Runtime: O(1)
      */
     public boolean offer(InetAddress address) {
         if (closed) {return false;}
         synchronized(cacheList) {
-            if (cacheList.contains(address)) {
+            if (cacheExistence.containsKey(address)) {
                 cacheList.remove(address);
             }
+            cacheExistence.put(address,address);
             cacheList.addFirst(address);
             cacheList.notify();     // wakes up any waiting threads
         }
@@ -68,19 +67,22 @@ public class InetCache implements AddressCache {
     /**
      * Returns {@code true} if the given {@link InetAddress}
      * is in the {@link AddressCache}.
+     * Runtime: O(1)
      */
     public boolean contains(InetAddress address) {
         if (closed) {return false;}
-        return cacheList.contains(address);
+        return cacheExistence.containsKey(address);
     }
 
     /**
      * Removes the given {@link InetAddress} and returns {@code true}
      * on success.
+     * Runtime: O(n)
      */
     public boolean remove(InetAddress address) {
         if (closed) {return false;}
-        if (cacheList.contains(address)) {
+        if (cacheExistence.containsKey(address)) {
+            cacheExistence.remove(address);
             cacheList.remove(address);
             return true;
         }
@@ -90,6 +92,7 @@ public class InetCache implements AddressCache {
     /**
      * Returns the most recently added {@link InetAddress} and returns
      * {@code null} if the {@link AddressCache} is empty.
+     * Runtime: O(1)
      */
     public InetAddress peek() {
         if (closed) { return null; }
@@ -99,16 +102,22 @@ public class InetCache implements AddressCache {
     /**
      * Removes and returns the most recently added {@link InetAddress} and
      * returns {@code null} if the {@link AddressCache} is empty.
+     * Runtime: O(1)
      */
     public InetAddress remove() {
         if (closed) { return null; }
-        return cacheList.pollFirst();
+        InetAddress retVal = cacheList.pollFirst();
+        if (retVal != null) {
+            cacheExistence.remove(retVal);
+        }
+        return retVal;
     }
 
 
     /**
      * Retrieves and removes the most recently added {@link InetAddress},
      * waiting if necessary until an element becomes available.
+     * Runtime: O(1)
      */
     public InetAddress take() throws InterruptedException {
         if (closed) { return null; }
@@ -117,15 +126,19 @@ public class InetCache implements AddressCache {
                 cacheList.wait();   // waits to be woken up by offer()
             }
         }
-        return cacheList.pollFirst();
+        InetAddress retVal = cacheList.pollFirst();
+        cacheExistence.remove(retVal);
+        return retVal;
     }
 
     /**
      * Closes the {@link AddressCache} and releases all resources.
      * Always be sure to close() cache at end of use or else timer will run indefinitely
+     * Runtime: O(1)
      */
     public void close() {
         cacheList = null;
+        cacheExistence = null;
         closed = true;
         
         cleanupTimer.cancel();
@@ -134,6 +147,7 @@ public class InetCache implements AddressCache {
 
     /**
      * Returns the number of elements in the {@link AddressCache}.
+     * Runtime: O(1)
      */
     public int size() {
         if (closed) { return -1; }
@@ -142,6 +156,7 @@ public class InetCache implements AddressCache {
 
     /**
      * Returns {@code true} if the {@link AddressCache} is empty.
+     * Runtime: O(1)
      */
     public boolean isEmpty() {
         if (closed) { return true; }
@@ -150,10 +165,15 @@ public class InetCache implements AddressCache {
 
     /**
     * Returns and removes least recently added {@link InetAddress}
+    * Runtime: O(1)
     */
     public InetAddress removeOldest() {
         if (closed) {return null; }
-        return cacheList.pollLast();
+        InetAddress retVal = cacheList.pollLast();
+        if (retVal != null) {
+            cacheExistence.remove(retVal);
+        }
+        return retVal;
     }
 
 }
