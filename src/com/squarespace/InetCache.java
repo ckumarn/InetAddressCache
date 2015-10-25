@@ -5,15 +5,40 @@ import java.net.InetAddress;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
+
+// import java.awt.*;
+// import java.awt.event.*;
+// import javax.swing.*;
 
 
 public class InetCache implements AddressCache {
     /** Actual cache, where head is most recent elements and tail is oldest */
-    private LinkedList<InetAddress> cacheList = new LinkedList<InetAddress>();
-    private boolean closed = false;
+    private LinkedList<InetAddress> cacheList;
+    private boolean closed;
+    Timer timer;
+
 
 //    /** HashMap to check for existence of element; trades runtime for space complexity */
 //    HashMap<InetAddress,InetAddress> cacheExistence = new HashMap<InetAddress, InetAddress>();
+
+    public void InetCache() {
+        this(5);
+    }
+    public void InetCache(int seconds) {
+        this.cacheList = new LinkedList<InetAddress>();
+        this.closed = false;
+        this.timer = new Timer();
+        this.timer.schedule(new removeTask(), seconds * 1000);
+    }
+
+    class removeTask extends TimerTask {
+        public void run() {
+            System.out.println("RUNNING THE REMOVE TASK");
+            System.exit(0);
+        }
+    }
 
     /**
      * Adds the given {@link InetAddress} and returns {@code true} on success.
@@ -91,6 +116,7 @@ public class InetCache implements AddressCache {
     public void close() {
         cacheList = null;
         closed = true;
+        // kill the timer
     }
 
     /**
